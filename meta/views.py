@@ -24,6 +24,12 @@ class Meta(object):
         self.use_og = kwargs.get('use_og', settings.USE_OG_PROPERTIES)
         self.use_twitter = kwargs.get('use_twitter', settings.USE_TWITTER_PROPERTIES)
         self.use_googleplus = kwargs.get('use_googleplus', settings.USE_GOOGLEPLUS_PROPERTIES)
+        self.twitter = kwargs.get('twitter', settings.TWITTER)
+        self.twitter_card = kwargs.get('twitter_card', settings.TWITTER_CARD)
+        self.facebook = kwargs.get('facebook', settings.FACEBOOK)
+        self.facebook_app = kwargs.get('facebook_app', settings.FACEBOOK_APP)
+        self.linkedin = kwargs.get('linkedin', settings.LINKEDIN)
+        self.googleplus = kwargs.get('googleplus', settings.GOOGLEPLUS)
 
     def get_domain(self):
         if self.use_sites:
@@ -41,7 +47,7 @@ class Meta(object):
     def get_full_url(self, url):
         if not url:
             return None
-        if url.startswith('http'):
+        if url.startswith('http') or url.startswith('//'):
             return url
         if url.startswith('/'):
             return '%s://%s%s' % (
@@ -109,6 +115,12 @@ class MetadataMixin(object):
     site_name = None
     use_sites = settings.USE_SITES
     use_og = settings.USE_OG_PROPERTIES
+    twitter = settings.TWITTER
+    twitter_card = settings.TWITTER_CARD
+    facebook = settings.FACEBOOK
+    facebook_app = settings.FACEBOOK_APP
+    linkedin = settings.LINKEDIN
+    googleplus = settings.GOOGLEPLUS
 
     def get_meta_class(self):
         return self.meta_class
@@ -140,6 +152,9 @@ class MetadataMixin(object):
     def get_meta_site_name(self, context={}):
         return self.site_name or settings.SITE_NAME
 
+    def get_twitter_card(self, context={}):
+        return self.twitter_card or settings.TWITTER_CARD
+
     def get_context_data(self, **kwargs):
         context = super(MetadataMixin, self).get_context_data(**kwargs)
         context['meta'] = self.get_meta_class()(
@@ -152,5 +167,11 @@ class MetadataMixin(object):
             url=self.get_meta_url(context=context),
             object_type=self.get_meta_object_type(context=context),
             site_name=self.get_meta_site_name(context=context),
+            twitter=self.twitter,
+            twitter_card=self.get_twitter_card(context=context),
+            facebook=self.facebook,
+            facebook_app=self.facebook_app,
+            linkedin=self.linkedin,
+            googleplus=self.googleplus,
         )
         return context

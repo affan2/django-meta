@@ -19,6 +19,11 @@ def og_prop(name, value):
 
 
 @register.simple_tag
+def fb_prop(name, value):
+    return '<meta property="fb:%s" content="%s">' % (name, value)
+
+
+@register.simple_tag
 def twitter_prop(name, value):
     return '<meta name="twitter:%s" content="%s">' % (name, value)
 
