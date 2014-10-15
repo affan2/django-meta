@@ -47,8 +47,13 @@ class Meta(object):
     def get_full_url(self, url):
         if not url:
             return None
-        if url.startswith('http') or url.startswith('//'):
+        if url.startswith('http'):
             return url
+        if url.startswith('//'):
+            return '%s:%s' % (
+                self.get_protocol(),
+                url
+            )
         if url.startswith('/'):
             return '%s://%s%s' % (
                 self.get_protocol(),
