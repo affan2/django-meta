@@ -1,15 +1,13 @@
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, unicode_literals
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from django.test import TestCase
 
-import meta
-from meta.views import MetadataMixin, Meta
+from meta import settings
+from meta.views import Meta, MetadataMixin
 
 
-class MetadataMixinTestCase(unittest.TestCase):
+class MetadataMixinTestCase(TestCase):
     def test_get_meta_class(self):
         m = MetadataMixin()
         self.assertEqual(
@@ -27,6 +25,45 @@ class MetadataMixinTestCase(unittest.TestCase):
         m.title = 'Foo'
         self.assertEqual(
             m.get_meta_title(),
+            'Foo'
+        )
+
+    def test_get_meta_og_title(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_og_title(),
+            None
+        )
+
+        m.og_title = 'Foo'
+        self.assertEqual(
+            m.get_meta_og_title(),
+            'Foo'
+        )
+
+    def test_get_meta_twitter_title(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_twitter_title(),
+            None
+        )
+
+        m.twitter_title = 'Foo'
+        self.assertEqual(
+            m.get_meta_twitter_title(),
+            'Foo'
+        )
+
+    def test_get_meta_gplus_title(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_gplus_title(),
+            None
+        )
+
+        m.gplus_title = 'Foo'
+        self.assertEqual(
+            m.get_meta_gplus_title(),
             'Foo'
         )
 
@@ -86,7 +123,7 @@ class MetadataMixinTestCase(unittest.TestCase):
     def test_get_meta_object_type_with_setting(self):
         m = MetadataMixin()
 
-        meta.settings.SITE_TYPE = 'foo'
+        settings.SITE_TYPE = 'foo'
 
         self.assertEqual(
             m.get_meta_object_type(),
@@ -109,12 +146,175 @@ class MetadataMixinTestCase(unittest.TestCase):
     def test_get_meta_site_name_with_setting(self):
         m = MetadataMixin()
 
-        meta.settings.SITE_NAME = 'Foo'
+        settings.SITE_NAME = 'Foo'
 
         self.assertEqual(
             m.get_meta_site_name(),
             'Foo'
         )
+
+    def test_get_meta_extra_props(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_extra_props(),
+            None
+        )
+
+        m.extra_props = {
+            'app_name': 'Foo',
+            'app_id': 'Bar'
+        }
+        self.assertEqual(
+            m.get_meta_extra_props(),
+            {
+                'app_name': 'Foo',
+                'app_id': 'Bar'
+            }
+        )
+
+    def test_get_meta_extra_custom_props(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_extra_custom_props(),
+            None
+        )
+
+        m.extra_custom_props = [
+            ('property', 'app_name', 'Foo'),
+            ('property', 'app_id', 'Bar'),
+        ]
+        self.assertEqual(
+            m.get_meta_extra_custom_props(),
+            [
+                ('property', 'app_name', 'Foo'),
+                ('property', 'app_id', 'Bar'),
+            ]
+        )
+
+    def test_get_meta_custom_namespace(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_custom_namespace(),
+            None
+        )
+
+        m.custom_namespace = "my-website"
+        self.assertEqual(
+            m.get_meta_custom_namespace(),
+            'my-website'
+        )
+
+        settings.OG_NAMESPACES = ['foo', 'bar']
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_custom_namespace(),
+            ['foo', 'bar']
+        )
+        settings.OG_NAMESPACES = None
+
+    def test_get_meta_twitter_site(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_twitter_site(),
+            None
+        )
+
+        m.twitter_site = '@foo'
+        self.assertEqual(
+            m.get_meta_twitter_site(),
+            '@foo'
+        )
+
+    def test_get_meta_twitter_creator(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_twitter_creator(),
+            None
+        )
+
+        m.twitter_creator = '@foo'
+        self.assertEqual(
+            m.get_meta_twitter_creator(),
+            '@foo'
+        )
+
+    def test_get_meta_twitter_card(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_twitter_card(),
+            None
+        )
+
+        m.twitter_card = 'summary'
+        self.assertEqual(
+            m.get_meta_twitter_card(),
+            'summary'
+        )
+
+    def test_get_meta_facebook_app_id(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_facebook_app_id(),
+            None
+        )
+
+        m.facebook_app_id = '12345'
+        self.assertEqual(
+            m.get_meta_facebook_app_id(),
+            '12345'
+        )
+
+    def test_get_meta_locale(self):
+        m = MetadataMixin()
+        self.assertEqual(
+            m.get_meta_locale(),
+            None
+        )
+
+        m.locale = 'en_US'
+        self.assertEqual(
+            m.get_meta_locale(),
+            'en_US'
+        )
+
+    def test_get_meta(self):
+        settings.SITE_PROTOCOL = 'http'
+        settings.SITE_DOMAIN = 'foo.com'
+        settings.USE_SITES = False
+        settings.FB_PAGES = 'fbpages'
+        settings.FB_APPID = 'appid'
+
+        m = MetadataMixin()
+        m.title = 'title'
+        m.description = 'description'
+        m.keywords = ['foo', 'bar']
+        m.url = 'some/path'
+        m.image = 'images/foo.gif'
+
+        meta_object = m.get_meta()
+
+        self.assertTrue(type(meta_object), Meta)
+        self.assertEqual(
+            meta_object.title,
+            'title'
+        )
+        self.assertEqual(
+            meta_object.description,
+            'description'
+        )
+        self.assertEqual(
+            meta_object.url,
+            'http://foo.com/some/path'
+        )
+        self.assertEqual(
+            meta_object.keywords,
+            ['foo', 'bar']
+        )
+        self.assertEqual(
+            meta_object.image,
+            'http://foo.com/static/images/foo.gif'
+        )
+        settings.SITE_DOMAIN = 'example.com'
 
     def test_get_context(self):
         class Super(object):
@@ -128,8 +328,9 @@ class MetadataMixinTestCase(unittest.TestCase):
             url = 'some/path'
             image = 'images/foo.gif'
 
-        meta.settings.SITE_PROTOCOL = 'http'
-        meta.settings.SITE_DOMAIN = 'foo.com'
+        settings.SITE_PROTOCOL = 'http'
+        settings.SITE_DOMAIN = 'foo.com'
+        settings.USE_SITES = False
 
         v = View()
 
@@ -149,3 +350,7 @@ class MetadataMixinTestCase(unittest.TestCase):
             context['meta'].image,
             'http://foo.com/static/images/foo.gif'
         )
+
+        settings.SITE_DOMAIN = 'example.com'
+        settings.FB_PAGES = ''
+        settings.FB_APPID = ''

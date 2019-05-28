@@ -6,29 +6,50 @@ from . import settings
 
 
 class Meta(object):
-    """ Helper for building context meta object """
-
+    """
+    Helper for building context meta object
+    """
     _keywords = []
     _url = None
     _image = None
+    request = None
 
     def __init__(self, **kwargs):
         self.use_sites = kwargs.get('use_sites', settings.USE_SITES)
         self.title = kwargs.get('title')
+        self.og_title = kwargs.get('og_title')
+        self.twitter_title = kwargs.get('twitter_title')
+        self.gplus_title = kwargs.get('gplus_title')
         self.description = kwargs.get('description')
+        self.extra_props = kwargs.get('extra_props')
+        self.extra_custom_props = kwargs.get('extra_custom_props')
+        self.custom_namespace = kwargs.get('custom_namespace', settings.OG_NAMESPACES)
         self.keywords = kwargs.get('keywords')
         self.url = kwargs.get('url')
         self.image = kwargs.get('image')
         self.object_type = kwargs.get('object_type', settings.SITE_TYPE)
         self.site_name = kwargs.get('site_name', settings.SITE_NAME)
+        self.twitter_site = kwargs.get('twitter_site')
+        self.twitter_creator = kwargs.get('twitter_creator')
+        self.twitter_card = kwargs.get('twitter_card')
+        self.facebook_app_id = kwargs.get('facebook_app_id')
+        self.locale = kwargs.get('locale')
         self.use_og = kwargs.get('use_og', settings.USE_OG_PROPERTIES)
         self.use_twitter = kwargs.get('use_twitter', settings.USE_TWITTER_PROPERTIES)
+        self.use_facebook = kwargs.get('use_facebook', settings.USE_FACEBOOK_PROPERTIES)
         self.use_googleplus = kwargs.get('use_googleplus', settings.USE_GOOGLEPLUS_PROPERTIES)
+        self.use_title_tag = kwargs.get('use_title_tag', settings.USE_TITLE_TAG)
+        self.gplus_type = kwargs.get('gplus_type', settings.GPLUS_TYPE)
+        self.gplus_publisher = kwargs.get('gplus_publisher', settings.GPLUS_PUBLISHER)
+        self.gplus_author = kwargs.get('gplus_author', settings.GPLUS_AUTHOR)
+        self.fb_pages = kwargs.get('fb_pages', settings.FB_PAGES)
+        self.og_app_id = kwargs.get('og_app_id', settings.FB_APPID)
+        self.request = kwargs.get('request', None)
 
     def get_domain(self):
         if self.use_sites:
             from django.contrib.sites.models import Site
-            return Site.objects.get_current().domain
+            return Site.objects.get_current(self.request).domain
         if not settings.SITE_DOMAIN:
             raise ImproperlyConfigured('META_SITE_DOMAIN is not set')
         return settings.SITE_DOMAIN
@@ -43,6 +64,11 @@ class Meta(object):
             return None
         if url.startswith('http'):
             return url
+        if url.startswith('//'):
+            return '%s:%s' % (
+                self.get_protocol(),
+                url
+            )
         if url.startswith('/'):
             return '%s://%s%s' % (
                 self.get_protocol(),
@@ -88,27 +114,51 @@ class Meta(object):
 
     @image.setter
     def image(self, image):
-        if image is None:
-            self._image = None
-            return
-        if not image.startswith('http') and not image.startswith('/'):
-            image = '%s%s' % (settings.IMAGE_URL, image)
-        self._image = self.get_full_url(image)
+        if image is None and settings.DEFAULT_IMAGE:
+            image = settings.DEFAULT_IMAGE
+        if image:
+            if not image.startswith('http') and not image.startswith('/'):
+                image = '%s%s' % (settings.IMAGE_URL, image)
+            self._image = self.get_full_url(image)
 
 
 class MetadataMixin(object):
-    """ Django CBV mixin to prepare metadata for the view context """
-
+    """
+    Django CBV mixin to prepare metadata for the view context
+    """
     meta_class = Meta
+    context_meta_name = 'meta'
+
     title = None
+    og_title = None
+    twitter_title = None
+    gplus_title = None
     description = None
+    extra_props = None
+    extra_custom_props = None
+    custom_namespace = None
     keywords = []
     url = None
     image = None
     object_type = None
     site_name = None
-    use_sites = settings.USE_SITES
-    use_og = settings.USE_OG_PROPERTIES
+    twitter_site = None
+    twitter_creator = None
+    twitter_card = None
+    facebook_app_id = None
+    locale = None
+    use_sites = False
+    use_og = False
+    use_title_tag = False
+    gplus_type = None
+    gplus_author = None
+    gplus_publisher = None
+
+    def __init__(self, **kwargs):
+        self.use_sites = settings.USE_SITES
+        self.use_og = settings.USE_OG_PROPERTIES
+        self.use_title_tag = settings.USE_TITLE_TAG
+        super(MetadataMixin, self).__init__(**kwargs)
 
     def get_meta_class(self):
         return self.meta_class
@@ -119,38 +169,98 @@ class MetadataMixin(object):
     def get_domain(self):
         return settings.SITE_DOMAIN
 
-    def get_meta_title(self, context={}):
+    def get_meta_title(self, context=None):
         return self.title
 
-    def get_meta_description(self, context={}):
+    def get_meta_og_title(self, context=None):
+        return self.og_title
+
+    def get_meta_twitter_title(self, context=None):
+        return self.twitter_title
+
+    def get_meta_gplus_title(self, context=None):
+        return self.gplus_title
+
+    def get_meta_description(self, context=None):
         return self.description
 
-    def get_meta_keywords(self, context={}):
+    def get_meta_keywords(self, context=None):
         return self.keywords
 
-    def get_meta_url(self, context={}):
+    def get_meta_url(self, context=None):
         return self.url
 
-    def get_meta_image(self, context={}):
+    def get_meta_image(self, context=None):
         return self.image
 
-    def get_meta_object_type(self, context={}):
+    def get_meta_object_type(self, context=None):
         return self.object_type or settings.SITE_TYPE
 
-    def get_meta_site_name(self, context={}):
+    def get_meta_site_name(self, context=None):
         return self.site_name or settings.SITE_NAME
 
-    def get_context_data(self, **kwargs):
-        context = super(MetadataMixin, self).get_context_data(**kwargs)
-        context['meta'] = self.get_meta_class()(
+    def get_meta_extra_props(self, context=None):
+        return self.extra_props
+
+    def get_meta_extra_custom_props(self, context=None):
+        return self.extra_custom_props
+
+    def get_meta_custom_namespace(self, context=None):
+        return self.custom_namespace or settings.OG_NAMESPACES
+
+    def get_meta_twitter_site(self, context=None):
+        return self.twitter_site
+
+    def get_meta_twitter_creator(self, context=None):
+        return self.twitter_creator
+
+    def get_meta_twitter_card(self, context=None):
+        return self.twitter_card
+
+    def get_meta_facebook_app_id(self, context=None):
+        return self.facebook_app_id
+
+    def get_meta_gplus_type(self, context=None):
+        return self.gplus_type
+
+    def get_meta_gplus_author(self, context=None):
+        return self.gplus_author
+
+    def get_meta_gplus_publisher(self, context=None):
+        return self.gplus_publisher
+
+    def get_meta_locale(self, context=None):
+        return self.locale
+
+    def get_meta(self, context=None):
+        return self.get_meta_class()(
             use_og=self.use_og,
+            use_title_tag=self.use_title_tag,
             use_sites=self.use_sites,
             title=self.get_meta_title(context=context),
+            og_title=self.get_meta_og_title(context=context),
+            twitter_title=self.get_meta_twitter_title(context=context),
+            gplus_title=self.get_meta_gplus_title(context=context),
             description=self.get_meta_description(context=context),
+            extra_props=self.get_meta_extra_props(context=context),
+            extra_custom_props=self.get_meta_extra_custom_props(context=context),
+            custom_namespace=self.get_meta_custom_namespace(context=context),
             keywords=self.get_meta_keywords(context=context),
             image=self.get_meta_image(context=context),
             url=self.get_meta_url(context=context),
             object_type=self.get_meta_object_type(context=context),
             site_name=self.get_meta_site_name(context=context),
+            twitter_site=self.get_meta_twitter_site(context=context),
+            twitter_creator=self.get_meta_twitter_creator(context=context),
+            twitter_card=self.get_meta_twitter_card(context=context),
+            locale=self.get_meta_locale(context=context),
+            facebook_app_id=self.get_meta_facebook_app_id(context=context),
+            gplus_type=self.get_meta_gplus_type(context=context),
+            gplus_author=self.get_meta_gplus_author(context=context),
+            gplus_publisher=self.get_meta_gplus_publisher(context=context),
         )
+
+    def get_context_data(self, **kwargs):
+        context = super(MetadataMixin, self).get_context_data(**kwargs)
+        context[self.context_meta_name] = self.get_meta(context=context)
         return context
