@@ -16,7 +16,7 @@ if apps.is_installed('sekizai'):
     from sekizai.templatetags.sekizai_tags import Addtoblock
     register.tag('addtoblock', Addtoblock)
 else:
-    from meta.compat import addtoblock
+    from ..compat import addtoblock
     register.tag('addtoblock', addtoblock)
 
 

@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import ImproperlyConfigured
+from django.views.generic.base import ContextMixin
 
 from . import settings
 
 
-class Meta(object):
+class Meta:
     """
     Helper for building context meta object
     """
@@ -122,7 +123,7 @@ class Meta(object):
             self._image = self.get_full_url(image)
 
 
-class MetadataMixin(object):
+class MetadataMixin(ContextMixin):
     """
     Django CBV mixin to prepare metadata for the view context
     """
@@ -261,6 +262,6 @@ class MetadataMixin(object):
         )
 
     def get_context_data(self, **kwargs):
-        context = super(MetadataMixin, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context[self.context_meta_name] = self.get_meta(context=context)
         return context

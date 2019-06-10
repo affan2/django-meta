@@ -3,8 +3,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.test import TestCase
 
-from meta import settings
-from meta.views import Meta, MetadataMixin
+from .. import settings as meta_settings
+from ..views import Meta, MetadataMixin
 
 
 class MetadataMixinTestCase(TestCase):
@@ -123,7 +123,7 @@ class MetadataMixinTestCase(TestCase):
     def test_get_meta_object_type_with_setting(self):
         m = MetadataMixin()
 
-        settings.SITE_TYPE = 'foo'
+        meta_settings.SITE_TYPE = 'foo'
 
         self.assertEqual(
             m.get_meta_object_type(),
@@ -146,7 +146,7 @@ class MetadataMixinTestCase(TestCase):
     def test_get_meta_site_name_with_setting(self):
         m = MetadataMixin()
 
-        settings.SITE_NAME = 'Foo'
+        meta_settings.SITE_NAME = 'Foo'
 
         self.assertEqual(
             m.get_meta_site_name(),
@@ -204,13 +204,13 @@ class MetadataMixinTestCase(TestCase):
             'my-website'
         )
 
-        settings.OG_NAMESPACES = ['foo', 'bar']
+        meta_settings.OG_NAMESPACES = ['foo', 'bar']
         m = MetadataMixin()
         self.assertEqual(
             m.get_meta_custom_namespace(),
             ['foo', 'bar']
         )
-        settings.OG_NAMESPACES = None
+        meta_settings.OG_NAMESPACES = None
 
     def test_get_meta_twitter_site(self):
         m = MetadataMixin()
@@ -278,11 +278,11 @@ class MetadataMixinTestCase(TestCase):
         )
 
     def test_get_meta(self):
-        settings.SITE_PROTOCOL = 'http'
-        settings.SITE_DOMAIN = 'foo.com'
-        settings.USE_SITES = False
-        settings.FB_PAGES = 'fbpages'
-        settings.FB_APPID = 'appid'
+        meta_settings.SITE_PROTOCOL = 'http'
+        meta_settings.SITE_DOMAIN = 'foo.com'
+        meta_settings.USE_SITES = False
+        meta_settings.FB_PAGES = 'fbpages'
+        meta_settings.FB_APPID = 'appid'
 
         m = MetadataMixin()
         m.title = 'title'
@@ -314,7 +314,7 @@ class MetadataMixinTestCase(TestCase):
             meta_object.image,
             'http://foo.com/static/images/foo.gif'
         )
-        settings.SITE_DOMAIN = 'example.com'
+        meta_settings.SITE_DOMAIN = 'example.com'
 
     def test_get_context(self):
         class Super(object):
@@ -328,9 +328,9 @@ class MetadataMixinTestCase(TestCase):
             url = 'some/path'
             image = 'images/foo.gif'
 
-        settings.SITE_PROTOCOL = 'http'
-        settings.SITE_DOMAIN = 'foo.com'
-        settings.USE_SITES = False
+        meta_settings.SITE_PROTOCOL = 'http'
+        meta_settings.SITE_DOMAIN = 'foo.com'
+        meta_settings.USE_SITES = False
 
         v = View()
 
@@ -351,6 +351,6 @@ class MetadataMixinTestCase(TestCase):
             'http://foo.com/static/images/foo.gif'
         )
 
-        settings.SITE_DOMAIN = 'example.com'
-        settings.FB_PAGES = ''
-        settings.FB_APPID = ''
+        meta_settings.SITE_DOMAIN = 'example.com'
+        meta_settings.FB_PAGES = ''
+        meta_settings.FB_APPID = ''

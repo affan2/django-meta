@@ -13,7 +13,7 @@ Meta models needs request objects when initializing if sites framework is not us
 """.strip()
 
 
-class ModelMeta(object):
+class ModelMeta:
     """
     Meta information mixin.
     """
@@ -94,7 +94,7 @@ class ModelMeta(object):
         """
         Method that generates the Meta object (from django-meta)
         """
-        from meta.views import Meta
+        from .views import Meta
         metadata = self.get_meta(request)
         meta = Meta(request=request)
         for field, data in self._retrieve_data(request, metadata):
@@ -129,7 +129,7 @@ class ModelMeta(object):
         Retrieve the author object. This is meant to be overridden in the model
         to return the actual author instance (e.g.: the user object).
         """
-        class Author(object):
+        class Author:
             fb_url = None
             twitter_profile = None
             gplus_profile = None
