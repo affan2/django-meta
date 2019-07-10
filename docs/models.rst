@@ -135,3 +135,4 @@ See below the basic reference template::
     {% endblock content %}
     </body>
     </html>
+

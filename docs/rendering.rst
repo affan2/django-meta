@@ -33,3 +33,4 @@ For compatibility with 1.0 and previous version you can keep the sekizai version
     {% load sekizai_tags meta %}
     ...
     <html {% render_block 'html_extra' %}>
+
