@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+
 
 import contextlib
 from copy import copy
@@ -64,7 +64,7 @@ class ModelMeta:
         Build the data according to the metadata configuration
         """
         with self._set_request(request):
-            for field, value in metadata.items():
+            for field, value in list(metadata.items()):
                 if value:
                     data = self._get_meta_value(field, value)
                     yield field, data

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+
 from django.test import TestCase
 
 from ..templatetags.meta import custom_meta, custom_meta_extras, facebook_prop, generic_prop, googleplus_html_scope, \

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+
 
 from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
@@ -31,13 +31,13 @@ class MetaObjectTestCase(TestCase):
             DEFAULT_IMAGE=None,
         )
         self.old = {}
-        for key, val in data.items():
+        for key, val in list(data.items()):
             self.old[key] = getattr(meta_settings, key)
             setattr(meta_settings, key, val)
 
     def tearDown(self):
         super(MetaObjectTestCase, self).tearDown()
-        for key, val in self.old.items():
+        for key, val in list(self.old.items()):
             setattr(meta_settings, key, val)
 
     def test_defaults(self):
